@@ -28,12 +28,12 @@ def chat_node(state:ChatState):
     messages = state['messages']
     response = llm.invoke(messages)
     return {"messages": [response]}
+
+
+
 # making a SQLITE saved (DataBase)
 conn = sqlite3.connect(database = 'chatbot.db' , check_same_thread = False)
-
-
 # checkpointer 
-
 checkpointer = SqliteSaver(conn =conn )
 
 graph = StateGraph(ChatState)
