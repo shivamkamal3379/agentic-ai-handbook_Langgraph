@@ -34,7 +34,7 @@ conn = sqlite3.connect(database = 'chatbot.db' , check_same_thread = False)
 
 # checkpointer 
 
-checkpointer = SqliteSaver(conn =conn)
+checkpointer = SqliteSaver(conn =conn )
 
 graph = StateGraph(ChatState)
 
