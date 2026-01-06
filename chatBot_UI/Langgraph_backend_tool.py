@@ -20,16 +20,17 @@ load_dotenv()
 # -------------------
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
-    temperature=1.0, 
+    temperature=1.0,
     max_tokens=None,
     timeout=None,
     max_retries=2,
-) 
+)
 # -------------------
 # 2. Tools
 # -------------------
 # Tools
 search_tool = DuckDuckGoSearchRun(region="us-en")
+
 
 @tool
 def calculator(first_num: float, second_num: float, operation: str) -> dict:
@@ -50,18 +51,21 @@ def calculator(first_num: float, second_num: float, operation: str) -> dict:
             result = first_num / second_num
         else:
             return {"error": f"Unsupported operation '{operation}'"}
-        
-        return {"first_num": first_num, "second_num": second_num, "operation": operation, "result": result}
+
+        return {
+            "first_num": first_num,
+            "second_num": second_num,
+            "operation": operation,
+            "result": result,
+        }
     except Exception as e:
         return {"error": str(e)}
-
-
 
 
 @tool
 def get_stock_price(symbol: str) -> dict:
     """
-    Fetch latest stock price for a given symbol (e.g. 'AAPL', 'TSLA') 
+    Fetch latest stock price for a given symbol (e.g. 'AAPL', 'TSLA')
     using Alpha Vantage with API key in the URL.
     """
     url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey=MXT8VN9LWUKHR2OP."
@@ -69,15 +73,16 @@ def get_stock_price(symbol: str) -> dict:
     return r.json()
 
 
-
 tools = [search_tool, get_stock_price, calculator]
 llm_with_tools = llm.bind_tools(tools)
+
 
 # -------------------
 # 3. State
 # -------------------
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
+
 
 # -------------------
 # 4. Nodes
@@ -87,6 +92,7 @@ def chat_node(state: ChatState):
     messages = state["messages"]
     response = llm_with_tools.invoke(messages)
     return {"messages": [response]}
+
 
 tool_node = ToolNode(tools)
 
@@ -105,10 +111,11 @@ graph.add_node("tools", tool_node)
 
 graph.add_edge(START, "chat_node")
 
-graph.add_conditional_edges("chat_node",tools_condition)
-graph.add_edge('tools', 'chat_node')
+graph.add_conditional_edges("chat_node", tools_condition)
+graph.add_edge("tools", "chat_node")
 
 chatbot = graph.compile(checkpointer=checkpointer)
+
 
 # -------------------
 # 7. Helper
